@@ -1,0 +1,510 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title></title>
+</head>
+<script language='javascript'>
+var debug = true;
+var drag_ptr  = false;
+var drag_targ = null;
+var drag_pos  = new coord(0,0);
+var mouseOffset = new coord(0,0);
+document.onmousemove = mouseMove;
+
+function getMouseOffset(target, ev)
+{
+   var docPos    = getPosition(target);
+   var mousePos  = mouseCoords(ev);
+
+   return new coord(mousePos.x-docPos.x, mousePos.y-docPos.y);
+}
+
+function getPosition(e)
+{
+   var left = 0;
+   var top  = 0;
+
+   while(e.offsetParent)
+   {
+      left += e.offsetLeft;
+      top  += e.offsetTop;
+      e     = e.offsetParent;
+
+   }
+
+   left += e.offsetLeft;
+   top  += e.offsetTop;
+
+   return new coord(left, top);
+}
+
+function mouseMove(ev)
+{
+   ev           = ev || window.event;
+   if (drag_targ == null)
+       return;
+   var mousePos = mouseCoords(ev);
+   var pCoord   = new coord(0,0);
+	
+   if (drag_targ != null)
+   {
+      drag_targ.style.position = "relative";
+      drag_targ.style.top      = (mousePos.y - mouseOffset.y - drag_start.y)+"px";
+      drag_targ.style.left     = (mousePos.x - mouseOffset.x - drag_start.x)+"px";
+
+      mpos = mousePos;
+      elem = document.getElementById("closed_div");
+      epos = getPosition(elem);
+      if (mpos.x >= epos.x
+      &&  mpos.x <= (epos.x+elem.clientWidth)
+      &&  mpos.y >= epos.y
+      &&  mpos.y <= (epos.y+elem.clientHeight))
+      {
+         if (drag_ptr)
+            hide_drag_pointer();
+         check_closed(mpos, drag_targ);
+         return;
+      }
+
+      elem = document.getElementById("open_div");
+      epos = getPosition(elem);
+      if (mpos.x >= epos.x
+      &&  mpos.x <= (epos.x+elem.clientWidth)
+      &&  mpos.y >= epos.y
+      &&  mpos.y <= (epos.y+elem.clientHeight))
+      {
+         check_open(mpos, drag_targ);
+         return;
+      }
+      if (drag_ptr)
+         hide_drag_pointer();
+   }
+}
+
+function mouseCoords(ev)
+{
+//   alert("Mouse Coords");
+   ev = ev || window.event;
+   return new coord(
+      ev.clientX + document.body.scrollLeft - document.body.clientLeft,
+      ev.clientY + document.body.scrollTop  - document.body.clientTop
+   );
+}
+
+function coord(px, py)
+{
+   this.x = px;
+   this.y = py;
+}
+
+function start_drag(root, evt)
+{
+   var e_cl, e_op, e_bd;
+   e_cl = document.getElementById("closed_div");
+   e_op = document.getElementById("open_div");
+
+   drag_targ = root;
+   drag_start = getPosition(drag_targ);
+   drag_targ.className += " is_dragging";
+   drag_targ.style.zindex = -1;
+   mouseOffset = getMouseOffset(root, evt);
+   return false;
+}
+
+function stop_drag(event)
+{
+   var mpos, elem, epos;
+   if (drag_targ == null)
+      return;
+   event = event || window.event;
+
+   hide_drag_pointer();
+   while(drag_targ.className.indexOf(" is_dragging") != -1)
+      drag_targ.className = drag_targ.className.replace(" is_dragging", "");
+   mpos = mouseCoords(event);
+
+   root = document.getElementById("closed_div");
+   for (elem = root.firstChild; elem != null; elem = elem.nextSibling)
+   {
+//      if (elem.className.indexOf(" drag_before") != -1)
+//         elem.className = elem.className.replace(" drag_before", "");
+
+//      if (elem.className.indexOf(" drag_after") != -1)
+//         elem.className = elem.className.replace(" drag_after", "");
+   }
+
+   root = document.getElementById("open_div");
+   for (elem = root.firstChild; elem != null; elem = elem.nextSibling)
+   {
+//      if (elem.className.indexOf(" drag_before") != -1)
+//         elem.className = elem.className.replace(" drag_before", "");
+
+//      if (elem.className.indexOf(" drag_after") != -1)
+//         elem.className = elem.className.replace(" drag_after", "");
+   }
+
+   elem = document.getElementById("closed_div");
+   epos = getPosition(elem);
+   if (mpos.x >= epos.x
+   &&  mpos.x <= (epos.x+elem.clientWidth)
+   &&  mpos.y >= epos.y
+   &&  mpos.y <= (epos.y+elem.clientHeight))
+   {
+      handle_closed(mpos, drag_targ);
+      return;
+   }
+
+   elem = document.getElementById("open_div");
+   epos = getPosition(elem);
+   if (mpos.x >= epos.x
+   &&  mpos.x <= (epos.x+elem.clientWidth)
+   &&  mpos.y >= epos.y
+   &&  mpos.y <= (epos.y+elem.clientHeight))
+   {
+      handle_open(mpos, drag_targ);
+      return;
+   }
+
+   // Just go back
+   drag_targ.style.position = "relative";
+   drag_targ.style.top      = "0px";
+   drag_targ.style.left     = "0px";
+   drag_targ = null;
+}
+
+function clear_dragtarg()
+{
+   drag_targ.style.position = "relative";
+   drag_targ.style.top      = "0px";
+   drag_targ.style.left     = "0px";
+   drag_targ = null;
+}
+
+function handle_closed(mpos, targ)
+{
+   e_cl = document.getElementById("closed_div");
+   e_op = document.getElementById("open_div");
+
+   targ.parentNode.removeChild(targ);
+
+   for (elem = e_cl.firstChild; elem != null; elem = elem.nextSibling)
+   {
+      epos = getPosition(elem);
+      useY = epos.y+(elem.clientHeight*.5);
+      
+      if (mpos.y < useY)
+      {
+         e_cl.insertBefore(targ, elem);
+         clear_dragtarg();
+         return;
+      }
+   }
+
+   e_cl.appendChild(targ);
+   clear_dragtarg();
+}
+
+function handle_open(mpos, targ)
+{
+   var epos, elem, e_cl, e_op;
+   e_cl = document.getElementById("closed_div");
+   e_op = document.getElementById("open_div");
+
+   targ.parentNode.removeChild(targ);
+
+   for (elem = e_op.firstChild; elem != null; elem = elem.nextSibling)
+   {
+      epos = getPosition(elem);
+      useX = epos.x+(elem.clientWidth*.3);
+      
+      if (mpos.x < useX)
+      {
+         e_op.insertBefore(targ, elem);
+         clear_dragtarg();
+         return;
+      }
+   }
+
+   e_op.appendChild(targ);
+   clear_dragtarg();
+}
+
+function check_closed(mpos, targ)
+{
+   var epos, elem, e_cl, e_op, found;
+
+   e_cl = document.getElementById("closed_div");
+   e_op = document.getElementById("open_div");
+   found = false;
+
+   for (elem = e_cl.firstChild; elem != null; elem = elem.nextSibling)
+   {
+      epos = getPosition(elem);
+      useY = epos.y+(elem.clientHeight*.5);
+
+//      if (elem.className.indexOf(" drag_before") != -1)
+//         elem.className = elem.className.replace(" drag_before", "");
+//
+//      if (elem.className.indexOf(" drag_after") != -1)
+//         elem.className = elem.className.replace(" drag_after", "");
+
+      if (elem == targ)
+         continue;
+
+      if (!found && mpos.y < useY)
+      {
+         elem.className += " drag_before";
+         found = true;
+      }
+
+      if (!found && elem.nextSibling == null)
+      {
+         elem.className += " drag_after";
+         found = true;
+      }
+   }
+}
+
+function check_open(mpos, targ)
+{
+   var epos, elem, e_cl, e_op, found;
+
+   e_cl = document.getElementById("closed_div");
+   e_op = document.getElementById("open_div");
+   found = false;
+
+   if (e_op.firstChild == null)
+   {
+      epos = getPosition(e_op);
+      show_drag_pointer(epos);
+   }
+
+   for (elem = e_op.firstChild; elem != null; elem = elem.nextSibling)
+   {
+      epos = getPosition(elem);
+      useX = epos.x+(elem.clientWidth*.3);
+
+//      if (elem.className.indexOf(" drag_before") != -1)
+//         elem.className = elem.className.replace(" drag_before", "");
+
+//      if (elem.className.indexOf(" drag_after") != -1)
+//         elem.className = elem.className.replace(" drag_after", "");
+
+      if (elem == targ)
+         continue;
+
+      if (!found && mpos.x < useX)
+      {
+         elem.className += " drag_before";
+         found = true;
+         show_drag_pointer(epos);
+      }
+
+      if (!found && elem.nextSibling == null)
+      {
+         elem.className += " drag_after";
+         found = true;
+         show_drag_pointer(new coord(epos.x+elem.clientWidth, epos.y));
+      }
+   }
+}
+
+function hide_drag_pointer()
+{
+   var root;
+
+   root = document.getElementById("drag_pointer");
+   root.style.display = "none";
+   drag_ptr = false;
+}
+
+function show_drag_pointer(pos)
+{
+   root = document.getElementById("drag_pointer");
+   root.style.top  = pos.y-10;
+   root.style.left = pos.x-3;
+   root.style.display = "block";
+   drag_ptr = true;
+}
+
+function test()
+{
+   alert('wtf');
+}
+
+function init_column_builder(list)
+{
+   var i, max;
+   var root, elem;
+   
+   root = document.getElementById("closed_div");
+
+   for (i=0,max=list.length; i<max; i++)
+   {
+      cur = list[i];
+      
+      elem = document.createElement("div");
+
+      elem.setAttribute("dataid",      i);
+
+      elem.appendChild(document.createTextNode(cur.name));
+      elem.className = "drag_target";
+//      elem.addEventListener("onmousedown", _start_drag, true);
+      if (elem.attachEvent)
+         elem.attachEvent("onmousedown", _start_drag);
+      else
+      {
+//         elem.addEventListener("click", test, true);
+         elem.setAttribute("onmousedown", "_start_drag");
+         elem.addEventListener("mousedown", _start_drag, false);
+      }
+//      elem.onmousedown = _start_drag;
+
+      elem.data = cur;
+      cur.elem  = elem;
+      
+      root.appendChild(elem);
+   }
+}
+
+function get_list_order()
+{
+   var root, ret, pos;
+
+   root = document.getElementById("open_div");
+   ret  = new Array();
+   pos  = 0;
+   
+   alert(root);
+
+   for (elem = root.firstChild; elem != null; elem = elem.nextSibling)
+   {
+      if (elem.nodeType != 1)
+         continue;
+      alert("#"+pos+": "+elem.data.name);
+      ret.push(elem);
+      pos++;
+   }
+   return ret;
+}
+
+function _start_drag(event)
+{
+   var target, evt;
+
+   evt = (event ? event : window.event);
+   target = (evt.target ? evt.target : evt.srcElement);
+   start_drag(target, evt);
+   return false;
+}
+
+var column_data = new Array();
+
+function AddColumnData(name, value, type, data)
+{
+   var cur;
+   cur       = new Object();
+   cur.id    = column_data.length;
+   cur.name  = name;
+   cur.value = value;
+   cur.type  = type;
+   cur.data  = data;
+   column_data.push(cur);
+}
+
+</script>
+<style type='text/css'>
+body
+{
+margin: 0px;
+}
+
+div
+{
+background: white;
+}
+
+#open_div
+{
+height: 50px;
+border: solid 1px green;
+}
+
+#closed_div
+{
+float: left;
+width: 155px;
+border: solid 1px red;
+}
+
+.drag_target
+{
+background: silver;
+border: solid 1px silver;
+cursor: pointer;
+}
+
+#open_div .drag_target
+{
+padding: 0px 1em 0px .5em;
+float: left;
+}
+
+#closed_div .drag_before
+{
+border-top: dashed 1px black;
+}
+
+#closed_div .drag_after
+{
+border-bottom: dashed 1px black;
+}
+
+#open_div .drag_before
+{
+border-left: dashed 1px black;
+}
+
+#open_div .drag_after
+{
+border-right: dashed 1px black;
+}
+
+.is_dragging
+{
+filter:alpha(opacity=70);
+cursor:pointer;
+}
+
+#drag_pointer
+{
+position: absolute;
+}
+
+</style>
+<body onmouseup="stop_drag(event);" onload="init_column_builder(column_data);" id="body">
+<table class='builder' width="100%">
+<tr><td colspan="2">&nbsp;</td></tr>
+<tr><td width="160" valign="top">
+<div id="closed_div" onselectstart='return false;'>
+</div>
+</td><td valign="top">
+<div id="open_div" onselectstart='return false;'>
+</div>
+</td></tr></table>
+<img id='drag_pointer' src='g\arr_D.gif' style='display:none;' />
+<script language="javascript">
+AddColumnData("Spacer",   "spacer", "copy", null);
+AddColumnData("Column 1", "col1",   "move", null);
+AddColumnData("Column 2", "col2",   "move", null);
+AddColumnData("Column 3", "col3",   "move", null);
+AddColumnData("Column 4", "col4",   "move", null);
+AddColumnData("Column 5", "col5",   "move", null);
+AddColumnData("Column 6", "col6",   "move", null);
+AddColumnData("Column 7", "col7",   "move", null);
+AddColumnData("Column 8", "col8",   "move", null);
+AddColumnData("Column 9", "col9",   "move", null);
+</script>
+<a href='#' onclick='get_list_order();'>Test</a>
+</body>
+</html>
