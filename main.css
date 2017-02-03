@@ -1,0 +1,65 @@
+﻿td, th, body, a, div
+{
+font-family: arial;
+font-size: 10pt;
+}
+
+.L1 td, .L1 th
+{
+background-color: gray;
+color: white;
+}
+
+.L2 td, .L2 th
+{
+background-color: silver;
+}
+
+.L3 td, .L3 th
+{
+background-color: white;
+}
+
+.indent0 .code
+{
+padding-left:.2em;
+}
+
+.indent1 .code
+{
+padding-left:.55em;
+}
+
+.indent2 .code
+{
+padding-left:.8em;
+}
+
+.indent0 .desc
+{
+padding-left:.2em;
+}
+
+.indent1 .desc
+{
+padding-left:1.7em;
+}
+
+.indent2 .desc
+{
+padding-left:2.45em;
+}
+
+.code
+{
+cursor:hand;
+}
+
+.toggle
+{
+cursor: hand;
+background-color: white !important;
+color: black !important;
+padding: 0px .2em 0px .2em;
+}
+
