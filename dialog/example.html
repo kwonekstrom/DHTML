@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Effective Dialog Box</title>
+    <style type="text/css">
+.dlg_back
+{
+    position: absolute;
+    z-index: 10;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    opacity: .7;
+    display:none;
+}
+
+.dlg_fore
+{
+    position: absolute;
+    z-index: 15;
+    opacity: 1;
+    text-align: center;
+    width: 100%;
+    top: 100px;
+    display:none;
+}
+
+.dlg_box
+{
+    width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: white;
+    border: double 4px black;
+    padding: 5px 8px 5px 8px;
+    font-size: 150%;
+}
+    </style>
+    <script language="javascript">
+function dialog_message(message) {
+
+            var elem_back, elem_fore, elem_box;
+            elem_back = document.getElementById("dlg_back");
+            elem_fore = document.getElementById("dlg_fore");
+            elem_box = document.getElementById("dlg_box");
+
+            elem_box.innerHTML = message;
+
+            elem_back.style.display = "block";
+            elem_fore.style.display = "block";
+        }
+    </script>
+</head>
+<body>
+    <div id="dlg_back" class="dlg_back">&nbsp;</div>
+    <div id="dlg_fore" class="dlg_fore"><div id="dlg_box" class="dlg_box">&nbsp;</div></div>
+    It is often necessary to create dialog boxes on a web application.  This is a simple method to build a dialog box that prevents the user from interacting with the "parent" web page.
+    <a href="javascript:dialog_message('This is a test message');" title="Test the dialog box using a simple wait message.">Test</a>
+</body>
+</html>
